@@ -4,7 +4,7 @@
 
 # OnePay Checkout for Laravel
 
-**Server-side Laravel integration for the OnePay Checkout Link API** (`api.oneapay.lk`) — create payment links with correct SHA-256 hashing, validation, and structured error handling.
+**Server-side Laravel integration for the OnePay Checkout Link API** (`api.onepay.lk`) — create payment links with correct SHA-256 hashing, validation, and structured error handling.
 
 <p align="center">
   <a href="https://packagist.org/packages/onepay/laravel-checkout"><img src="https://img.shields.io/packagist/v/onepay/laravel-checkout?label=stable&style=flat-square" alt="Latest Stable Version"></a>
@@ -53,7 +53,7 @@ ONEPAY_RETRY_TIMES=3
 ONEPAY_RETRY_SLEEP_MS=500
 ```
 
-The **API base URL** is fixed in `config/onepay.php` (`https://api.oneapay.lk/v3`) and is not read from `.env`, so it cannot be overridden from client input.
+The **API base URL** is fixed in `config/onepay.php` (`https://api.onepay.lk/v3`) and is not read from `.env`, so it cannot be overridden from client input.
 
 ---
 
@@ -179,4 +179,4 @@ This package is open-sourced software licensed under the [MIT license](LICENSE).
 ## Links
 
 - [Packagist — `onepay/laravel-checkout`](https://packagist.org/packages/onepay/laravel-checkout)
-- OnePay API base: `https://api.oneapay.lk/v3/checkout/link/`
+- OnePay API base: `https://api.onepay.lk/v3/checkout/link/`

@@ -35,7 +35,7 @@ class OnePayCheckoutLinkTest extends TestCase
     public function test_create_checkout_link_posts_expected_payload_and_maps_response(): void
     {
         Http::fake([
-            'https://api.oneapay.lk/v3/checkout/link*' => Http::response([
+            'https://api.onepay.lk/v3/checkout/link*' => Http::response([
                 'status' => true,
                 'data' => [
                     'gateway' => [
@@ -64,7 +64,7 @@ class OnePayCheckoutLinkTest extends TestCase
         Http::assertSent(function ($request) use ($expectedHash) {
             $data = $request->data();
 
-            return $request->url() === 'https://api.oneapay.lk/v3/checkout/link/'
+            return $request->url() === 'https://api.onepay.lk/v3/checkout/link/'
                 && $request->hasHeader('Authorization', 'secret-token')
                 && ($data['currency'] ?? null) === 'LKR'
                 && ($data['app_id'] ?? null) === 'MYAPPID'
@@ -80,7 +80,7 @@ class OnePayCheckoutLinkTest extends TestCase
     public function test_create_checkout_link_throws_on_api_error_plain_body(): void
     {
         Http::fake([
-            'https://api.oneapay.lk/v3/checkout/link*' => Http::response('Bad Request', 400),
+            'https://api.onepay.lk/v3/checkout/link*' => Http::response('Bad Request', 400),
         ]);
 
         $service = $this->app->make(OnePayService::class);
@@ -94,7 +94,7 @@ class OnePayCheckoutLinkTest extends TestCase
     public function test_create_checkout_link_parses_onepay_json_error_body(): void
     {
         Http::fake([
-            'https://api.oneapay.lk/v3/checkout/link*' => Http::response([
+            'https://api.onepay.lk/v3/checkout/link*' => Http::response([
                 'status' => 400,
                 'message' => 'Invalid request data',
                 'error' => 'Invalid app credentials',

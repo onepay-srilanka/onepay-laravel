@@ -16,7 +16,7 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        $app['config']->set('onepay.base_url', 'https://api.oneapay.lk/v3');
+        $app['config']->set('onepay.base_url', 'https://api.onepay.lk/v3');
         $app['config']->set('onepay.app_id', 'MYAPPID');
         $app['config']->set('onepay.app_token', 'secret-token');
         $app['config']->set('onepay.hash_salt', 'mysalt');

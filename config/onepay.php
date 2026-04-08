@@ -13,7 +13,7 @@ return [
     | config file on the server.
     |
     */
-    'base_url' => 'https://api.oneapay.lk/v3',
+    'base_url' => 'https://api.onepay.lk/v3',
 
     /*
     |--------------------------------------------------------------------------

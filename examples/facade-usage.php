@@ -9,12 +9,16 @@ use OnePay\Checkout\Facades\OnePay;
 
 // 1. Create a checkout link
 $response = OnePay::createCheckoutLink([
+    'reference' => 'INV01HXABC', // required — use your order id or OnePay::generateReference()
     'amount' => 1500,
     'customer_first_name' => 'John',
     'customer_last_name' => 'Doe',
     'customer_phone_number' => '+94771234567',
     'customer_email' => 'john@example.com',
     'transaction_redirect_url' => 'https://example.com/payment/callback',
+    // optional:
+    // 'additionalData' => 'any string metadata for the transaction',
+    // 'items' => ['item_id_1', 'item_id_2'],
 ]);
 
 // Access response properties

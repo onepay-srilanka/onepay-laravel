@@ -21,6 +21,7 @@ class OnePayCheckoutLinkTest extends TestCase
     private function checkoutPayload(array $overrides = []): array
     {
         return array_merge([
+            'reference' => 'REF-PAYLOAD-001',
             'amount' => 100,
             'customer_first_name' => 'John',
             'customer_last_name' => 'Doe',
@@ -48,6 +49,8 @@ class OnePayCheckoutLinkTest extends TestCase
         $result = $service->createCheckoutLink($this->checkoutPayload([
             'amount' => 200,
             'reference' => 'REFTEST123',
+            'additionalData' => 'order_meta=abc',
+            'items' => ['item-1', 42],
         ]));
 
         $expectedHash = hash('sha256', 'MYAPPIDLKR200.00mysalt');
@@ -67,7 +70,9 @@ class OnePayCheckoutLinkTest extends TestCase
                 && ($data['hash'] ?? null) === $expectedHash
                 && ($data['amount'] ?? null) === '200.00'
                 && ($data['reference'] ?? null) === 'REFTEST123'
-                && ($data['customer_email'] ?? null) === 'john@example.com';
+                && ($data['customer_email'] ?? null) === 'john@example.com'
+                && ($data['additionalData'] ?? null) === 'order_meta=abc'
+                && ($data['items'] ?? null) === ['item-1', '42'];
         });
     }
 
@@ -120,11 +125,59 @@ class OnePayCheckoutLinkTest extends TestCase
 
         try {
             $service->createCheckoutLink([
+                'reference' => 'REF-VAL-EMAIL',
                 'amount' => 50,
                 'customer_first_name' => 'X',
                 'customer_last_name' => 'Y',
                 'customer_phone_number' => '+94770000000',
                 'customer_email' => 'not-an-email',
+                'transaction_redirect_url' => 'https://example.com/cb',
+            ]);
+        } finally {
+            Http::assertNothingSent();
+        }
+    }
+
+    public function test_create_checkout_link_validation_fails_without_reference(): void
+    {
+        Http::fake();
+
+        $service = $this->app->make(OnePayService::class);
+
+        $this->expectException(OnePayException::class);
+        $this->expectExceptionMessage('Checkout payload validation failed.');
+
+        try {
+            $service->createCheckoutLink([
+                'amount' => 10,
+                'customer_first_name' => 'X',
+                'customer_last_name' => 'Y',
+                'customer_phone_number' => '+94770000000',
+                'customer_email' => 'x@example.com',
+                'transaction_redirect_url' => 'https://example.com/cb',
+            ]);
+        } finally {
+            Http::assertNothingSent();
+        }
+    }
+
+    public function test_create_checkout_link_validation_fails_when_reference_too_short(): void
+    {
+        Http::fake();
+
+        $service = $this->app->make(OnePayService::class);
+
+        $this->expectException(OnePayException::class);
+        $this->expectExceptionMessage('Checkout payload validation failed.');
+
+        try {
+            $service->createCheckoutLink([
+                'reference' => 'SHORTREF', // 8 characters
+                'amount' => 10,
+                'customer_first_name' => 'X',
+                'customer_last_name' => 'Y',
+                'customer_phone_number' => '+94770000000',
+                'customer_email' => 'x@example.com',
                 'transaction_redirect_url' => 'https://example.com/cb',
             ]);
         } finally {

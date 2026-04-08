@@ -43,14 +43,16 @@ class OnePayService
      * Create a OnePay checkout link and return a structured response.
      *
      * @param  array{
+     *     reference: string, // 10–64 characters
      *     amount: string|int|float,
-     *     reference?: string,
      *     customer_first_name: string,
      *     customer_last_name: string,
      *     customer_phone_number: string,
      *     customer_email: string,
      *     transaction_redirect_url: string,
      *     currency?: string,
+     *     additionalData?: string|null,
+     *     items?: array<int, string|int>|null,
      * } $data
      *
      * @throws OnePayException
@@ -61,7 +63,7 @@ class OnePayService
 
         $currency = $data['currency'] ?? $this->currency;
         $amount = $this->normalizeAmount($data['amount']);
-        $reference = $data['reference'] ?? $this->generateReference();
+        $reference = $data['reference'];
         $hash = $this->generateHash($this->appId, $currency, $amount);
 
         $payload = [
@@ -76,6 +78,14 @@ class OnePayService
             'customer_email' => $data['customer_email'],
             'transaction_redirect_url' => $data['transaction_redirect_url'],
         ];
+
+        if (array_key_exists('additionalData', $data) && $data['additionalData'] !== null && $data['additionalData'] !== '') {
+            $payload['additionalData'] = $data['additionalData'];
+        }
+
+        if (! empty($data['items'])) {
+            $payload['items'] = array_values($data['items']);
+        }
 
         $decoded = $this->post('/checkout/link/', $payload);
 
@@ -98,7 +108,8 @@ class OnePayService
     }
 
     /**
-     * Generate a unique, URL-safe reference string.
+     * Generate a unique, URL-safe reference string (for use as the required
+     * `reference` argument to createCheckoutLink()).
      */
     public function generateReference(string $prefix = 'REF'): string
     {
@@ -152,7 +163,16 @@ class OnePayService
      */
     protected function validatePayload(array $data): array
     {
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $i => $id) {
+                if (is_int($id) || is_float($id)) {
+                    $data['items'][$i] = (string) $id;
+                }
+            }
+        }
+
         $validator = Validator::make($data, [
+            'reference' => ['required', 'string', 'min:10', 'max:64'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'customer_first_name' => ['required', 'string', 'max:255'],
             'customer_last_name' => ['required', 'string', 'max:255'],
@@ -160,8 +180,10 @@ class OnePayService
             // RFC only — avoid dns: it requires network and breaks CI/sandbox runs.
             'customer_email' => ['required', 'email:rfc', 'max:255'],
             'transaction_redirect_url' => ['required', 'url', 'max:2048'],
-            'reference' => ['sometimes', 'string', 'max:64'],
             'currency' => ['sometimes', 'string', 'size:3'],
+            'additionalData' => ['sometimes', 'nullable', 'string', 'max:65535'],
+            'items' => ['sometimes', 'nullable', 'array', 'max:500'],
+            'items.*' => ['string', 'max:255'],
         ]);
 
         if ($validator->fails()) {
@@ -170,7 +192,13 @@ class OnePayService
             );
         }
 
-        return $validator->validated();
+        $validated = $validator->validated();
+
+        if (array_key_exists('items', $validated) && is_array($validated['items'])) {
+            $validated['items'] = array_values($validated['items']);
+        }
+
+        return $validated;
     }
 
     // ------------------------------------------------------------------

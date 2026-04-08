@@ -25,23 +25,40 @@ class OnePayController extends Controller
     public function checkout(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'reference' => ['nullable', 'string', 'min:10', 'max:64'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
             'email' => ['required', 'email', 'max:255'],
             'redirect_url' => ['required', 'url', 'max:2048'],
+            'additional_data' => ['nullable', 'string', 'max:65535'],
+            'items' => ['nullable', 'array', 'max:500'],
+            'items.*' => ['string', 'max:255'],
         ]);
 
+        $reference = $validated['reference'] ?? $this->onePay->generateReference('ORD');
+
         try {
-            $response = $this->onePay->createCheckoutLink([
+            $payload = [
+                'reference' => $reference,
                 'amount' => $validated['amount'],
                 'customer_first_name' => $validated['first_name'],
                 'customer_last_name' => $validated['last_name'],
                 'customer_phone_number' => $validated['phone'],
                 'customer_email' => $validated['email'],
                 'transaction_redirect_url' => $validated['redirect_url'],
-            ]);
+            ];
+
+            if (! empty($validated['additional_data'])) {
+                $payload['additionalData'] = $validated['additional_data'];
+            }
+
+            if (! empty($validated['items'])) {
+                $payload['items'] = $validated['items'];
+            }
+
+            $response = $this->onePay->createCheckoutLink($payload);
 
             if (! $response->succeeded()) {
                 return response()->json([

@@ -71,14 +71,17 @@ public function pay(OnePayService $onePay)
 {
     try {
         $response = $onePay->createCheckoutLink([
+            'reference' => 'ORD-' . $order->id, // required — your unique transaction reference
             'amount' => 200.00,
             'customer_first_name' => 'John',
             'customer_last_name' => 'Doe',
             'customer_phone_number' => '+94771234567',
             'customer_email' => 'john@example.com',
             'transaction_redirect_url' => 'https://yoursite.test/payment/return',
-            // 'reference' => 'OPTIONAL_CUSTOM_REF', // omit to auto-generate
-            // 'currency' => 'LKR',                  // optional; default from config
+            // optional:
+            // 'currency' => 'LKR', // default from config
+            // 'additionalData' => 'extra context for the transaction',
+            // 'items' => ['item_id_1', 'item_id_2'],
         ]);
 
         if (! $response->succeeded()) {
@@ -101,6 +104,7 @@ public function pay(OnePayService $onePay)
 use OnePay\Checkout\Facades\OnePay;
 
 $response = OnePay::createCheckoutLink([
+    'reference' => OnePay::generateReference('INV'),
     'amount' => 1500,
     'customer_first_name' => 'Jane',
     'customer_last_name' => 'Doe',
@@ -110,13 +114,28 @@ $response = OnePay::createCheckoutLink([
 ]);
 ```
 
+### Request fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `reference` | **Yes** | Unique transaction reference (**10–64** characters). Use your order id or `generateReference()`. |
+| `amount` | Yes | Amount; normalised to 2 decimals for hashing and the API. |
+| `customer_first_name` | Yes | |
+| `customer_last_name` | Yes | |
+| `customer_phone_number` | Yes | |
+| `customer_email` | Yes | |
+| `transaction_redirect_url` | Yes | Return URL after payment. |
+| `currency` | No | 3-letter code; defaults to `config('onepay.currency')`. |
+| `additionalData` | No | Any extra string metadata for the transaction (API key: `additionalData`). |
+| `items` | No | Array of created item ids (numeric ids are sent as strings in JSON). |
+
 ### Response object
 
 `createCheckoutLink()` returns `OnePay\Checkout\DTOs\CheckoutResponse`:
 
 | Property / method   | Description                                      |
 |--------------------|--------------------------------------------------|
-| `reference`        | Payment reference (yours or auto-generated)      |
+| `reference`        | Same reference you passed in (echo from your payload) |
 | `hash`             | SHA-256 sent to the API                          |
 | `redirectUrl`      | Gateway URL to send the customer to              |
 | `rawResponse`      | Decoded JSON from OnePay                         |

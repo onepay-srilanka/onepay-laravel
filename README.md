@@ -47,10 +47,6 @@ This creates `config/onepay.php`. Set your **server-side only** secrets in `.env
 ONEPAY_APP_ID=your-app-id-here
 ONEPAY_APP_TOKEN=your-app-token-here
 ONEPAY_HASH_SALT=your-hash-salt-here
-ONEPAY_CURRENCY=LKR
-ONEPAY_TIMEOUT=30
-ONEPAY_RETRY_TIMES=3
-ONEPAY_RETRY_SLEEP_MS=500
 ```
 
 The **API base URL** is fixed in `config/onepay.php` (`https://api.onepay.lk/v3`) and is not read from `.env`, so it cannot be overridden from client input.

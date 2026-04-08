@@ -32,6 +32,7 @@ class OnePayController extends Controller
             'phone' => ['required', 'string', 'max:20'],
             'email' => ['required', 'email', 'max:255'],
             'redirect_url' => ['required', 'url', 'max:2048'],
+            'currency' => ['required', 'string', 'size:3'],
             'additional_data' => ['nullable', 'string', 'max:65535'],
             'items' => ['nullable', 'array', 'max:500'],
             'items.*' => ['string', 'max:255'],
@@ -42,6 +43,7 @@ class OnePayController extends Controller
         try {
             $payload = [
                 'reference' => $reference,
+                'currency' => strtoupper($validated['currency']),
                 'amount' => $validated['amount'],
                 'customer_first_name' => $validated['first_name'],
                 'customer_last_name' => $validated['last_name'],

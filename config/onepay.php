@@ -48,8 +48,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Currency
+    | Default Currency (app use)
     |--------------------------------------------------------------------------
+    |
+    | Not merged automatically into API calls — you must pass `currency` into
+    | createCheckoutLink(). Use config('onepay.currency') when building payloads.
+    |
     */
     'currency' => env('ONEPAY_CURRENCY', 'LKR'),
 

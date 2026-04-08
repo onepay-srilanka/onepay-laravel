@@ -22,6 +22,7 @@ class OnePayCheckoutLinkTest extends TestCase
     {
         return array_merge([
             'reference' => 'REF-PAYLOAD-001',
+            'currency' => 'LKR',
             'amount' => 100,
             'customer_first_name' => 'John',
             'customer_last_name' => 'Doe',
@@ -126,11 +127,36 @@ class OnePayCheckoutLinkTest extends TestCase
         try {
             $service->createCheckoutLink([
                 'reference' => 'REF-VAL-EMAIL',
+                'currency' => 'LKR',
                 'amount' => 50,
                 'customer_first_name' => 'X',
                 'customer_last_name' => 'Y',
                 'customer_phone_number' => '+94770000000',
                 'customer_email' => 'not-an-email',
+                'transaction_redirect_url' => 'https://example.com/cb',
+            ]);
+        } finally {
+            Http::assertNothingSent();
+        }
+    }
+
+    public function test_create_checkout_link_validation_fails_without_currency(): void
+    {
+        Http::fake();
+
+        $service = $this->app->make(OnePayService::class);
+
+        $this->expectException(OnePayException::class);
+        $this->expectExceptionMessage('Checkout payload validation failed.');
+
+        try {
+            $service->createCheckoutLink([
+                'reference' => 'REF-NOCURRENCY',
+                'amount' => 10,
+                'customer_first_name' => 'X',
+                'customer_last_name' => 'Y',
+                'customer_phone_number' => '+94770000000',
+                'customer_email' => 'x@example.com',
                 'transaction_redirect_url' => 'https://example.com/cb',
             ]);
         } finally {
@@ -149,6 +175,7 @@ class OnePayCheckoutLinkTest extends TestCase
 
         try {
             $service->createCheckoutLink([
+                'currency' => 'LKR',
                 'amount' => 10,
                 'customer_first_name' => 'X',
                 'customer_last_name' => 'Y',
@@ -173,6 +200,7 @@ class OnePayCheckoutLinkTest extends TestCase
         try {
             $service->createCheckoutLink([
                 'reference' => 'SHORTREF', // 8 characters
+                'currency' => 'LKR',
                 'amount' => 10,
                 'customer_first_name' => 'X',
                 'customer_last_name' => 'Y',

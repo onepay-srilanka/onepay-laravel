@@ -72,6 +72,7 @@ public function pay(OnePayService $onePay)
     try {
         $response = $onePay->createCheckoutLink([
             'reference' => 'ORD-' . $order->id, // required — your unique transaction reference
+            'currency' => 'LKR', // required — 3-letter ISO code (e.g. from config('onepay.currency'))
             'amount' => 200.00,
             'customer_first_name' => 'John',
             'customer_last_name' => 'Doe',
@@ -79,7 +80,6 @@ public function pay(OnePayService $onePay)
             'customer_email' => 'john@example.com',
             'transaction_redirect_url' => 'https://yoursite.test/payment/return',
             // optional:
-            // 'currency' => 'LKR', // default from config
             // 'additionalData' => 'extra context for the transaction',
             // 'items' => ['item_id_1', 'item_id_2'],
         ]);
@@ -105,6 +105,7 @@ use OnePay\Checkout\Facades\OnePay;
 
 $response = OnePay::createCheckoutLink([
     'reference' => OnePay::generateReference('INV'),
+    'currency' => 'LKR',
     'amount' => 1500,
     'customer_first_name' => 'Jane',
     'customer_last_name' => 'Doe',
@@ -125,7 +126,7 @@ $response = OnePay::createCheckoutLink([
 | `customer_phone_number` | Yes | |
 | `customer_email` | Yes | |
 | `transaction_redirect_url` | Yes | Return URL after payment. |
-| `currency` | No | 3-letter code; defaults to `config('onepay.currency')`. |
+| `currency` | **Yes** | Exactly **3** characters (e.g. `LKR`). Often `config('onepay.currency')`. |
 | `additionalData` | No | Any extra string metadata for the transaction (API key: `additionalData`). |
 | `items` | No | Array of created item ids (numeric ids are sent as strings in JSON). |
 

@@ -10,6 +10,7 @@ use OnePay\Checkout\Facades\OnePay;
 // 1. Create a checkout link
 $response = OnePay::createCheckoutLink([
     'reference' => 'INV01HXABC', // required — use your order id or OnePay::generateReference()
+    'currency' => 'LKR',
     'amount' => 1500,
     'customer_first_name' => 'John',
     'customer_last_name' => 'Doe',

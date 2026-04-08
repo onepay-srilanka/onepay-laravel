@@ -18,7 +18,6 @@ class OnePayService
     protected string $appId;
     protected string $appToken;
     protected string $hashSalt;
-    protected string $currency;
     protected int $timeout;
     protected int $retryTimes;
     protected int $retrySleepMs;
@@ -29,7 +28,6 @@ class OnePayService
         $this->appId = $this->requireConfig('onepay.app_id');
         $this->appToken = $this->requireConfig('onepay.app_token');
         $this->hashSalt = $this->requireConfig('onepay.hash_salt');
-        $this->currency = config('onepay.currency', 'LKR');
         $this->timeout = (int) config('onepay.timeout', 30);
         $this->retryTimes = (int) config('onepay.retry.times', 3);
         $this->retrySleepMs = (int) config('onepay.retry.sleep_ms', 500);
@@ -50,7 +48,7 @@ class OnePayService
      *     customer_phone_number: string,
      *     customer_email: string,
      *     transaction_redirect_url: string,
-     *     currency?: string,
+     *     currency: string,
      *     additionalData?: string|null,
      *     items?: array<int, string|int>|null,
      * } $data
@@ -61,7 +59,7 @@ class OnePayService
     {
         $data = $this->validatePayload($data);
 
-        $currency = $data['currency'] ?? $this->currency;
+        $currency = strtoupper($data['currency']);
         $amount = $this->normalizeAmount($data['amount']);
         $reference = $data['reference'];
         $hash = $this->generateHash($this->appId, $currency, $amount);
@@ -180,7 +178,7 @@ class OnePayService
             // RFC only — avoid dns: it requires network and breaks CI/sandbox runs.
             'customer_email' => ['required', 'email:rfc', 'max:255'],
             'transaction_redirect_url' => ['required', 'url', 'max:2048'],
-            'currency' => ['sometimes', 'string', 'size:3'],
+            'currency' => ['required', 'string', 'size:3'],
             'additionalData' => ['sometimes', 'nullable', 'string', 'max:65535'],
             'items' => ['sometimes', 'nullable', 'array', 'max:500'],
             'items.*' => ['string', 'max:255'],

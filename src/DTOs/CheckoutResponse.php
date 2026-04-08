@@ -29,10 +29,26 @@ final readonly class CheckoutResponse implements JsonSerializable
     {
         $status = $this->rawResponse['status'] ?? null;
 
-        return $status === true
-            || $status === 1
-            || $status === '1'
-            || ($this->rawResponse['data']['status'] ?? null) === true;
+        if ($status === true || $status === 1 || $status === '1') {
+            return true;
+        }
+
+        if (($this->rawResponse['data']['status'] ?? null) === true) {
+            return true;
+        }
+
+        // OnePay returns HTTP-style codes in the JSON body (e.g. 200) on success.
+        if (is_int($status) && $status >= 200 && $status < 300) {
+            return true;
+        }
+
+        if (is_string($status) && ctype_digit($status)) {
+            $code = (int) $status;
+
+            return $code >= 200 && $code < 300;
+        }
+
+        return false;
     }
 
     public function toArray(): array
